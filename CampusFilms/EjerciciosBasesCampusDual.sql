@@ -143,10 +143,82 @@ AND M.MOVIE_DURATION = (SELECT MIN(M2.MOVIE_DURATION)
 /*Indica el número de películas que hayan hecho los directores durante las décadas 
  * de los 60, 70 y 80 que contengan la palabra “The” en cualquier parte del título
  */
-
-SELECT 
+SELECT D.DIRECTOR_NAME AS Nombre, COUNT(M.MOVIE_ID) AS "Cantidad de películas"
 FROM PUBLIC.MOVIES M
 INNER JOIN PUBLIC.DIRECTORS D ON (M.DIRECTOR_ID = D.DIRECTOR_ID)
-WHERE M.MOVIE_RELEASE_DATE BETWEEN DATE '1960-01-01' AND DATE '1989-12-31'
-GROUP BY ;
+WHERE M.MOVIE_RELEASE_DATE BETWEEN DATE '1960-01-01' AND DATE '1989-12-31' 
+AND M.MOVIE_NAME LIKE 'The%'
+GROUP BY D.DIRECTOR_ID ;
+
+-- DIFICULTAD: Difícil
+-- 26 Lista nombre, nacionalidad y director de todas las películas
+SELECT M.MOVIE_NAME AS "Película", N.NATIONALITY_NAME AS "Nacionalidad", D.DIRECTOR_NAME AS "Director"
+FROM PUBLIC.MOVIES M
+INNER JOIN PUBLIC.NATIONALITIES N ON (M.NATIONALITY_ID = N.NATIONALITY_ID)
+INNER JOIN PUBLIC.DIRECTORS D ON (M.DIRECTOR_ID = D.DIRECTOR_ID);
+
+-- 27 Muestra las películas con los actores que han participado en cada una de ellas
+SELECT M.MOVIE_NAME AS "Película", A.ACTOR_NAME AS "Actores"
+FROM PUBLIC.MOVIES M
+INNER JOIN PUBLIC.MOVIES_ACTORS MA ON (M.MOVIE_ID = MA.MOVIE_ID)
+INNER JOIN PUBLIC.ACTORS A ON (MA.ACTOR_ID = A.ACTOR_ID);
+
+-- 28 Indica cual es el nombre del director del que más películas se ha accedido
+SELECT D.DIRECTOR_NAME AS "Director"
+FROM PUBLIC.MOVIES M
+INNER JOIN PUBLIC.DIRECTORS D ON (M.DIRECTOR_ID = D.DIRECTOR_ID)
+INNER JOIN PUBLIC.USER_MOVIE_ACCESS UMA ON (UMA.MOVIE_ID = M.MOVIE_ID)
+GROUP BY D.DIRECTOR_NAME
+HAVING COUNT(UMA.ACCESS_ID) = (
+    SELECT MAX(Accesos)
+    FROM (
+        SELECT COUNT(UMA2.ACCESS_ID) AS "Accesos"
+        FROM PUBLIC.MOVIES M2
+        INNER JOIN PUBLIC.DIRECTORS D2 ON (M2.DIRECTOR_ID = D2.DIRECTOR_ID)
+        INNER JOIN PUBLIC.USER_MOVIE_ACCESS UMA2 ON (UMA2.MOVIE_ID = M2.MOVIE_ID)
+        GROUP BY D2.DIRECTOR_NAME
+    ) AS "Accesos"
+);
+
+-- 29 Indica cuantos premios han ganado cada uno de los estudios con las películas que han creado
+SELECT S.STUDIO_NAME AS "Estudio", SUM(A.AWARD_WIN) AS "Premios Ganados"
+FROM PUBLIC.MOVIES M
+INNER JOIN PUBLIC.STUDIOS S ON (S.STUDIO_ID = M.STUDIO_ID)
+INNER JOIN PUBLIC.AWARDS A ON (A.MOVIE_ID = M.MOVIE_ID)
+GROUP BY S.STUDIO_NAME
+ORDER BY "Premios Ganados" DESC;
+
+/* 30 Indica el número de premios a los que estuvo nominado un actor, pero que no ha conseguido 
+ * (Si una película está nominada a un premio, su actor también lo está)
+ */
+SELECT AC.ACTOR_NAME AS "Actor", SUM(A.AWARD_ALMOST_WIN) AS "Premios casi ganados"
+FROM PUBLIC.MOVIES M
+INNER JOIN PUBLIC.MOVIES_ACTORS MA ON (M.MOVIE_ID = MA.MOVIE_ID)
+INNER JOIN PUBLIC.AWARDS A ON (A.MOVIE_ID = M.MOVIE_ID)
+INNER JOIN PUBLIC.ACTORS AC  ON (AC.ACTOR_ID = MA.ACTOR_ID)
+GROUP BY AC.ACTOR_NAME
+ORDER BY SUM(A.AWARD_ALMOST_WIN) DESC;
+-- 31 Indica cuantos actores y directores hicieron películas para los estudios no activos
+
+
+
+
+/* 32 Indica el nombre, ciudad, y teléfono de todos los miembros de la plataforma que hayan
+ * accedido películas que hayan sido nominadas a más de 150 premios y ganaran menos de 50
+ */
+
+
+
+
+/*33 Comprueba si hay errores en la BD entre las películas y directores 
+ * (un director muerto en el 76 no puede dirigir una película en el 88)
+ */
+
+
+
+
+/* 34- Utilizando la información de la sentencia anterior, modifica la 
+ * fecha de defunción a un año más tarde del estreno de la película 
+ * (mediante sentencia SQL)
+ */
 
